@@ -1,7 +1,7 @@
 header_version=1
 os_version=12.0.0
-os_patch_level=2022-10
-board=SRPSD23A001KU
+os_patch_level=2023-08
+board=SRPSD23A002KU
 pagesize=2048
 cmdline=androidboot.selinux=permissive androidboot.selinux=permissive loop.max_part=7
 base=0x10000000
