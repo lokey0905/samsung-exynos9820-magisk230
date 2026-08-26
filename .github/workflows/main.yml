@@ -20,7 +20,7 @@ env:
   MODEL: N971N
   TOOLCHAIN: cruel
   PATCH_LEVEL: 2023-08
-  KERNEL_NAME: N971N-HWH5-Test1
+  KERNEL_NAME: N971N-HWH5-Kitsune272-lokey0905
 
 jobs:
   build:
@@ -145,16 +145,33 @@ jobs:
 
       - name: Create boot image
         run: |
+          set -euo pipefail
+
           ./cruelbuild :mkimg
+
+          echo
+          echo "===== Generated images ====="
+          ls -lh *.img || true
+
+          # CruelKernel names the image after the model
+          test -s N971N.img
+
+          # Keep original output and also provide standard boot.img name
+          cp -f N971N.img boot.img
+
+          echo
+          echo "===== Final images ====="
+          ls -lh N971N.img boot.img
 
       - name: Verify generated boot image
         run: |
-          set -e
+          set -euo pipefail
 
-          test -f boot.img
+          test -s N971N.img
+          test -s boot.img
 
           echo "===== Generated files ====="
-          ls -lh *.img || true
+          ls -lh N971N.img boot.img
 
           echo
           echo "===== boot.img ====="
@@ -162,7 +179,12 @@ jobs:
 
           echo
           echo "===== SHA256 ====="
-          sha256sum boot.img | tee SHA256SUMS.txt
+          sha256sum N971N.img boot.img | tee SHA256SUMS.txt
+
+          echo
+          echo "===== Verify copies are identical ====="
+          cmp -s N971N.img boot.img
+          echo "OK: N9711N.img and boot.img are identical"
 
           echo
           echo "===== Build config ====="
@@ -172,13 +194,24 @@ jobs:
 
           echo
           echo "Generated boot.img size: ${BOOT_SIZE} bytes"
+          echo "Stock boot partition size: 57671680 bytes"
 
-          # HWH5 stock boot partition image supplied from SM-N971N:
-          # 0x03700000 = 57,671,680 bytes
           if [ "${BOOT_SIZE}" -gt 57671680 ]; then
-            echo "ERROR: boot.img exceeds the stock boot partition size"
+            echo "ERROR: boot.img exceeds stock boot partition size"
             exit 1
           fi
+
+          echo "OK: boot.img fits boot partition"
+
+          echo
+          echo "===== N971N HWH5 boot template ====="
+          cat cruel/build.mkbootimg.N971N
+
+          grep -q '^os_patch_level=2023-08$' cruel/build.mkbootimg.N971N
+          grep -q '^board=SRPSD23A002KU$' cruel/build.mkbootimg.N971N
+
+          echo
+          echo "OK: HWH5 patch level and board match"
 
       - name: Save build information
         run: |
@@ -190,18 +223,25 @@ jobs:
             echo "Board=SRPSD23A002KU"
             echo "KernelName=${KERNEL_NAME}"
             echo "Toolchain=${TOOLCHAIN}"
-            echo "Magisk=v23.0"
+            echo "Magisk=v27.2-kitsune-4"
             echo "GitCommit=${GITHUB_SHA}"
             echo
+            echo "N971N.img:"
+            sha256sum N971N.img
+            echo
+            echo "boot.img:"
             sha256sum boot.img
           } > build-info.txt
+
+          cat build-info.txt
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: N971N-HWH5-Test1
+          name: N971N-HWH5-Kitsune-27.2
           path: |
             boot.img
+            N971N.img
             config.info
             config.N971N
             build-info.txt
