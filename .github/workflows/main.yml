@@ -86,7 +86,7 @@ jobs:
             name="${KERNEL_NAME}" \
             os_patch_level="${PATCH_LEVEL}" \
             toolchain="${TOOLCHAIN}" \
-            +magisk=v23.0 \
+            +magisk=v27.2-kitsune-4 \
             2>&1 | tee config.info
 
       - name: Download Cruel toolchain
