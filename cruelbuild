@@ -104,6 +104,9 @@ models = {
     'G977N': {
         'config': 'exynos9820-beyondxks_defconfig'
     },
+    'N971N': {
+        'config': 'exynos9820-d1xks_defconfig'
+    },
     'N975F': {
         'config': 'exynos9820-d2s_defconfig'
     },
